@@ -1,1 +1,1 @@
-# synclite
+# Synclite
