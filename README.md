@@ -1,6 +1,6 @@
 # Synclite
 
-Synclite is a SQLite streaming replication library implemented in Rust.
+Synclite is a SQLite streaming replication Rust library inspired by [Litestream](https://github.com/benbjohnson/litestream).
 
 **CAUTION** This library is currently in an experimental stage and contains known bugs, making it unsuitable for production use at this time.
 
