@@ -1,9 +1,10 @@
 #![forbid(unsafe_code)]
-#![forbid(clippy::unwrap_used)]
+#![deny(clippy::unwrap_used)]
 #![deny(clippy::pedantic)]
 #![deny(clippy::get_unwrap)]
 #![allow(clippy::module_name_repetitions)]
 #![allow(clippy::missing_errors_doc)]
+#![cfg_attr(test, allow(clippy::unwrap_used))]
 
 // TODO: only export stuff that is needed
 pub mod config;

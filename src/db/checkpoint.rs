@@ -54,7 +54,7 @@ pub async fn checkpoint(
     // frames between the checkpoint & the new write lock.
     //
     // This only occurs with high load and a short sync frequency so it is rare.
-    if verify_last_shadow_frame(ctx).await? {
+    if !verify_last_shadow_frame(ctx).await? {
         error!("cannot verify last frame copied from shadow wal");
         return Err(Error::LastShadowFrameMismatchAfterCheckpoint);
     }

@@ -108,9 +108,7 @@ pub async fn write_wal_segment(
 
     if let Some(replica_wal_itr) = replica.wal_itr.as_mut() {
         if let Err(err) = replica_wal_itr.append(pos.clone()) {
-            // TODO: this error should not be possible to recover from?
             error!("Failed to append wal segment to wal iterator: `{err:#?}`");
-            return Err(err);
         }
     }
     Ok(())
