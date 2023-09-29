@@ -44,7 +44,7 @@ pub async fn checkpoint(
     // however, it will ensure our tx grabs the write lock. Unfortunately,
     // we can't call "BEGIN IMMEDIATE" as we are already in a transaction.
     sqlx::query("INSERT INTO _synclite_lock (id) VALUES (1)")
-        .execute(&mut tx)
+        .execute(&mut *tx)
         .await
         .map_err(Error::WriteLockTable)?;
 

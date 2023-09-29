@@ -56,7 +56,7 @@ impl<'c> Context<'c> {
         }
         let mut new_read_tx = self.db.begin().await.map_err(Error::BeginTx)?;
         sqlx::query("SELECT COUNT(1) FROM _synclite_seq")
-            .fetch_all(&mut new_read_tx)
+            .fetch_all(&mut *new_read_tx)
             .await
             .map_err(Error::ReadSequenceTable)?;
         *read_tx = Some(new_read_tx);
