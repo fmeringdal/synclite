@@ -171,6 +171,12 @@ async fn find_latest_wal_index(
         .map(|segments| segments.last().map(Pos::index))
 }
 
+pub async fn has_backup(client: &impl ReplicaClient) -> Result<bool, Error> {
+    find_latest_generation(client)
+        .await
+        .map(|generation| generation.is_some())
+}
+
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;

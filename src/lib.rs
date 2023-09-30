@@ -10,7 +10,7 @@
 pub mod config;
 pub mod context;
 pub mod db;
-mod error;
+pub mod error;
 mod pos;
 pub mod replica;
 mod restore;
@@ -21,12 +21,14 @@ use std::{io::SeekFrom, path::Path, sync::Arc, time::Duration};
 
 use error::Error;
 use notify::{RecommendedWatcher, Watcher};
+pub use replica::Config as ReplicaConfig;
 use replica::Replica;
 use tokio::{
     io::{AsyncReadExt, AsyncSeekExt},
     sync::{broadcast, watch},
 };
 use tracing::{debug, error, info};
+use utils::meta_path;
 
 use crate::{
     config::{ReplicateConfig, RestoreConfig},
@@ -151,6 +153,13 @@ pub async fn replicate(
     Ok(())
 }
 
+pub async fn has_backup(config: ReplicaConfig) -> Result<bool, Error> {
+    let replica = match config {
+        replica::Config::S3(config) => Arc::new(replica::s3::S3Replica::new(config).await?),
+    };
+    crate::restore::has_backup(replica.as_ref()).await
+}
+
 pub async fn restore(config: RestoreConfig) -> Result<(), Error> {
     if config.if_not_exists {
         let Ok(exists) = tokio::fs::try_exists(&config.db_path).await else {
@@ -179,6 +188,8 @@ pub async fn restore(config: RestoreConfig) -> Result<(), Error> {
         // Try delete any WAL and WAL index file if exists
         let _ = tokio::fs::remove_file(format!("{}-wal", config.db_path)).await;
         let _ = tokio::fs::remove_file(format!("{}-shm", config.db_path)).await;
+        // Delete meta directory as well
+        let _ = tokio::fs::remove_dir(meta_path(&config.db_path)).await;
     }
 
     let replica = match config.replica {
