@@ -127,7 +127,7 @@ impl Replica {
         // Acquire a read lock on the database during snapshot to prevent checkpoints.
         let mut tx = self.db.begin().await.map_err(Error::BeginTx)?;
         sqlx::query("SELECT COUNT(1) FROM _synclite_seq;")
-            .execute(&mut tx)
+            .execute(&mut *tx)
             .await
             .map_err(Error::ReadSequenceTable)?;
 
