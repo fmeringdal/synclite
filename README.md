@@ -14,7 +14,23 @@ Start by setting up minio to store the replicated data
 docker run -p 9000:9000 -p 9001:9001 minio/minio:latest server /data --console-address ":9001"
 ```
 
-This is how you would replicate a SQLite DB at path `tmp.db`:
+Create a SQLite DB at path `tmp.db` and insert some dummy data
+
+```sh
+sqlite3 tmp.db
+> CREATE TABLE IF NOT EXISTS test (a INT);
+> INSERT INTO test VALUES(1);
+> INSERT INTO test VALUES(2);
+> INSERT INTO test VALUES(3);
+```
+
+Add `synclite` to your `Cargo.toml`
+```toml
+[dependencies]
+synclite = "0.2.2"
+```
+
+Start replicating
 
 ```rust
 std::env::set_var("AWS_ACCESS_KEY_ID", "minioadmin");
@@ -45,7 +61,15 @@ tokio::spawn({
 });
 ```
 
-This is how you would restore your SQLite DB from MinIO to the local path `restored.db`:
+Add some more dummy data while replication is runnning
+```sh
+sqlite3 tmp.db
+> INSERT INTO test VALUES(4);
+> INSERT INTO test VALUES(5);
+sleep 2 # give some time for replication to run
+```
+
+Then restore the replicated data to `restored.db`
 
 ```rust
 std::env::set_var("AWS_ACCESS_KEY_ID", "minioadmin");
@@ -64,6 +88,17 @@ let restore_config = synclite::config::RestoreConfig {
     encryption_key: None,
 };
 synclite::restore(restore_config.clone()).await.unwrap();
+```
+
+Inspected the restored db
+```sh
+sqlite3 restored.db
+> SELECT * FROM test;
+1
+2
+3
+4
+5
 ```
 
 
